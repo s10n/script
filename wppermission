@@ -8,5 +8,7 @@ find wp-content -type f -exec chmod 664 {} +
 chmod 660 wp-config.php
 
 echo "  "
+echo "  "
 echo "  $(tput setaf 3)권한 설정 완료$(tput sgr0)"
+echo "  "
 echo "  "

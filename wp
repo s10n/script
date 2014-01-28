@@ -3,8 +3,11 @@
 WP_ACTION=0
 until [ "$WP_ACTION" == "1" ] || [ "$WP_ACTION" == "2" ] || [ "$WP_ACTION" == "3" ]; do
 echo "  "
-echo "무엇을 진행할까요?"
-echo "$(tput setaf 3)1$(tput sgr0):워드프레스 시작  |  $(tput setaf 3)2$(tput sgr0):워드프레스 DB덤프  |  $(tput setaf 3)3$(tput sgr0):워드프레스 가져오기 혹은 버전관리"
+echo "  "
+echo "  $(tput setaf 3)워드프레스 프로젝트 관리도구입니다.$(tput sgr0)"
+echo "  $(tput setaf 3)무엇을 진행할까요?$(tput sgr0)"
+echo "  "
+echo "$(tput setaf 3)1$(tput sgr0):시작하기  |  $(tput setaf 3)2$(tput sgr0):DB덤프  |  $(tput setaf 3)3$(tput sgr0):가져오기 혹은 버전관리"
 echo "-------------------------------------------------------------------------"
 read WP_ACTION
 done

@@ -13,13 +13,14 @@
 
 # 스크립트 안내
 echo "  "
-echo "  $(tput setaf 3)프로젝트를 복사 혹은 버전관리합니다.$(tput sgr0)"
+echo "  "
 echo "  $(tput setaf 3)원본에서 dump를 먼저 실행한 뒤에 실행합니다.$(tput sgr0)"
 echo "  $(tput setaf 3)nginx 설정을 미리 준비하면 좋습니다.$(tput sgr0)"
 
 # ** 수행할 행동 묻기
 ACTION=0
 until [ "$ACTION" == "1" ] || [ "$ACTION" == "2" ]; do
+echo "  "
 echo "  "
 echo "무엇을 진행할까요?"
 echo "$(tput setaf 3)1$(tput sgr0):가져오기  |  $(tput setaf 3)2$(tput sgr0):버전관리"
@@ -31,6 +32,7 @@ done
 SERVER=0
 until [ "$SERVER" == "1" ] || [ "$SERVER" == "2" ] || [ "$SERVER" == "3" ]; do
 echo "  "
+echo "  "
 echo "실행 중인 환경을 입력하세요."
 echo "$(tput setaf 3)1$(tput sgr0):로컬(~/wp)  |  $(tput setaf 3)2$(tput sgr0):서버(~/demo)  |  $(tput setaf 3)3$(tput sgr0):특수"
 echo "-------------------------------------------------------------------------"
@@ -39,13 +41,16 @@ done
 
 # ** 프로젝트 이름과 비밀번호 묻기
 echo "  "
+echo "  "
 echo "DB이름을 입력하세요. (이 서버에서 사용할 DB이름)"
 echo "앞서 dump 실행시 입력한 '목적지에서 사용할 이름'을 그대로 쓰십시오."
 echo "-------------------------------------------------------------------------"
 read NAME
 if [ "$SERVER" == "3" ]; then
   echo "  "
-  echo "$NAME DB의 사용자명을 입력하세요. (DB이름과 같으면 바로 엔터)"
+  echo "  "
+  echo "$NAME DB의 사용자명을 입력하세요."
+  echo "기본값: $NAME    (바로 엔터)"
   echo "-------------------------------------------------------------------------"
   read DB_USER
   if [ "$DB_USER" == "" ]; then
@@ -55,6 +60,7 @@ else
   DB_USER=$NAME
 fi
 echo "  "
+echo "  "
 echo "$NAME DB의 비밀번호를 입력하세요. (이 서버에서 사용할 DB 비밀번호)"
 echo "-------------------------------------------------------------------------"
 read PASSWORD
@@ -63,7 +69,9 @@ read PASSWORD
 GIT_REPO_DEFAULT=git@akaivlabs.com:client/$NAME.git
 if [ "$ACTION" == "1" ]; then
   echo "  "
-  echo "원격 저장소 주소를 입력하세요. 기본값: $GIT_REPO_DEFAULT"
+  echo "  "
+  echo "원격 저장소 주소를 입력하세요."
+  echo "기본값: $GIT_REPO_DEFAULT"
   echo "기본값을 이용하시려면 바로 엔터를 입력하세요."
   echo "-------------------------------------------------------------------------"
   read GIT_REPO
@@ -83,12 +91,14 @@ elif [ "$SERVER" == "2" ]; then
   PROJECT_DIR=$NAME
 elif [ "$SERVER" == "3" ]; then
   echo "  "
-  echo "프로젝트를 생성할/가져올 ~ 이후 부모 디렉토리를 입력하십시오."
+  echo "  "
+  echo "프로젝트의 ~ 이후 부모 디렉토리를 입력하십시오."
   echo "예를들어 ~/projects/name에 생성하려면 projects만 입력합니다."
-  echo "부모가 홈이라면 ~ 를 입력하세요."
+  echo "부모가 ~ 이라면 ~ 를 입력하세요."
   echo "( /home/이나 ~/는 입력하지 마십시오. )"
   echo "-------------------------------------------------------------------------"
   read PARENT_DIR
+  echo "  "
   echo "  "
   echo "위에서 입력한 이후 경로를 입력하십시오."
   echo "예를들어 ~/projects/name에 생성하려면 name만 입력합니다."
@@ -99,13 +109,15 @@ fi
 # 프로젝트를 가져올 경로를 묻는다.
 # == 이미 sql과 uploads폴더를 갖고 있는 경우(로컬에서 온 경우) 필요치 않다.
 echo "  "
-echo "sql과 uploads 폴더를 scp로 가져옵니다."
-echo "이미 sql파일과 uploads를 가지고 있다면 바로 엔터를 입력하십시오."
-echo "가져올 서버에서 실제 사용중인 프로젝트의 디렉토리 이름을 입력합니다. (부모경로 제외)"
-echo "예를들어 ~/old_projects/old_name에 워드프레스 파일이 들어있다면 old_name을 입력합니다."
+echo "  "
+echo "$(tput setaf 3)sql과 uploads 폴더를 scp로 가져옵니다.$(tput sgr0)"
+echo "$(tput setaf 3)이미 sql파일과 uploads를 가지고 있다면 바로 엔터를 입력하십시오.$(tput sgr0)"
+echo "가져올 서버에서 사용중인 디렉토리 이름을 (부모경로 제외) 입력합니다."
+echo "예를들어 ~/demo/$NAME이라면 $NAME을(를) 입력합니다."
 echo "-------------------------------------------------------------------------"
 read OLD_NAME
 if [ "$OLD_NAME" != "" ]; then
+  echo "  "
   echo "  "
   echo "sql 파일과 uploads폴더를 가져올 ssh 주소를 입력하십시오."
   echo "기본값: labs@akaivlabs.com"
@@ -116,9 +128,10 @@ if [ "$OLD_NAME" != "" ]; then
     FROM_SCP=labs@akaivlabs.com
   fi
   echo "  "
+  echo "  "
   echo "가져올 서버에서 사용중인 프로젝트 부모 경로를 입력하십시오."
-  echo "기본값: demo    ( /home/이나 ~/는 입력하지 마십시오. )"
   echo "예를들어 /home/user/projects/name에 워드프레스 파일이 들어있다면 projects를 입력합니다."
+  echo "기본값: demo    ( /home/이나 ~/는 입력하지 마십시오. )"
   echo "기본값을 이용하시려면 바로 엔터를 입력하십시오."
   echo "-------------------------------------------------------------------------"
   read FROM_PARENT_DIR
@@ -130,6 +143,7 @@ fi
 # 복사인 경우에만
 if [ "$ACTION" == 1 ]; then
   # 복사: DB 만들기
+  echo "  "
   echo "  "
   echo "DB를 새로 만드시겠습니까? (Y/n)"
   echo "만약 까페24 호스팅 서버에서 실행중이라면 만들지 마십시오."
@@ -149,7 +163,9 @@ cd ~ && cd $PARENT_DIR
 # git clone 혹은 git pull
 if [ "$ACTION" == 1 ]; then
   # ** 복사하기라면 git clone
+  echo "  "
   echo "  $(tput setaf 3)git clone$(tput sgr0) $(tput setaf 2)$GIT_REPO ~/$PARENT_DIR/$PROJECT_DIR$(tput sgr0)"
+  echo "  "
   echo "  "
   git clone $GIT_REPO $PROJECT_DIR
   cd $PROJECT_DIR
@@ -157,7 +173,9 @@ if [ "$ACTION" == 1 ]; then
 else
   # ** 버전관리라면 git pull
   cd $PROJECT_DIR
+  echo "  "
   echo "  $(tput setaf 3)git pull$(tput sgr0)"
+  echo "  "
   echo "  "
   git pull
 fi
@@ -165,7 +183,9 @@ fi
 # 여기부터 양 쪽 모두 수행
 # == 서브모듈 업데이트
 echo "  "
+echo "  "
 echo "  $(tput setaf 3)git submodule update$(tput sgr0) $(tput setaf 2)https://github.com/akaiv/style.git$(tput sgr0)"
+echo "  "
 echo "  "
 git submodule update
 
@@ -174,7 +194,9 @@ git submodule update
 # ** 그 외의 경우 가져와야 한다.
 if [ "$OLD_NAME" != "" ]; then
   echo "  "
+  echo "  "
   echo "  $(tput setaf 3)$FROM_SCP로부터 sql 파일을 가져옵니다.$(tput sgr0)"
+  echo "  "
   echo "  "
   scp $FROM_SCP:$NAME.sql ~
 fi
@@ -188,16 +210,19 @@ cd wp-content
 # ** 가져오고 있는 곳이 로컬이 아니라면, SCP로 가져온다.
 if [  "$OLD_NAME" != "" ]; then
   echo "  "
+  echo "  "
   echo "  $(tput setaf 3)$FROM_SCP로부터 uploads를 가져옵니다.$(tput sgr0)"
   echo "  "
-  sudo scp -r $FROM_SCP:$FROM_PARENT_DIR/$OLD_NAME/wp-content/uploads/* uploads/
+  echo "  "
+  sudo scp -r $FROM_SCP:$FROM_PARENT_DIR/$OLD_NAME/wp-content/uploads .
 # ** 가져오고 있는 곳이 로컬이라면, 이미 홈에 uploads가 있다.
 else
   # uploads 폴더 복사하고 지우기
-  sudo cp -r ~/uploads/* uploads/
+  sudo cp -r ~/uploads .
   rm -rf ~/uploads
 fi
 # ** 권한 설정
+echo "  "
 echo "  "
 echo "$(tput setaf 3)uploads 폴더의 소유자를 www-data로 바꿀까요? (Y/n)$(tput sgr0)"
 echo "$(tput setaf 3)만약 www-data가 아니라면 (CentOS의 경우 nginx) 수동으로 하십시오.$(tput sgr0)"
@@ -206,6 +231,7 @@ read CHOWN
 if [ "$CHOWN" == "n" ] || [ "$CHOWN" == "N" ]; then
   echo "$(tput setaf 3)변경하지 않습니다.$(tput sgr0)"
 else
+  echo "  "
   echo "  "
   echo "$(tput setaf 3)비밀번호를 입력하십시오.$(tput sgr0)"
   echo "-------------------------------------------------------------------------"
@@ -223,6 +249,7 @@ if [ "$SERVER" == "3" ]; then
 fi
 
 # 마치며 안내
+echo "  "
 echo "  "
 echo "  모든 작업을 수행했습니다."
 echo "  "
@@ -244,9 +271,11 @@ else
 fi
 echo "  $(tput setaf 3)uploads chown$(tput sgr0)     : $(tput setaf 2)www-data:www-data$(tput sgr0)"
 echo "  "
+echo "  "
 
 # ** 만약 처음이었다면 wp-config.php를 만들어야한다.
 if [ "$ACTION" == "1" ]; then
   echo "  $(tput setaf 3)처음으로 접속하여 wp-config.php를 만드십시오.$(tput sgr0)"
 fi
+echo "  "
 echo "  "

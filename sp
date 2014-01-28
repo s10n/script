@@ -3,5 +3,7 @@
 cd ~ && cd script
 chmod 755 *
 echo "  "
+echo "  "
 echo "  $(tput setaf 3)권한 설정 완료$(tput sgr0)"
+echo "  "
 echo "  "

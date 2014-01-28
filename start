@@ -1,0 +1,103 @@
+#!/bin/bash
+# start: 템플릿으로부터 처음 워드프레스 프로젝트 시작하기
+
+echo "  "
+echo "  $(tput setaf 3)템플릿에서 워드프레스 프로젝트를 만듭니다.$(tput sgr0)"
+echo "  $(tput setaf 3)프로젝트를 위한 원격 저장소가 생성되어 있는지 먼저 확인하세요.$(tput sgr0)"
+
+# 사용자에게 입력받기
+SERVER=0
+until [ "$SERVER" == "1" ] || [ "$SERVER" == "2" ]; do
+echo "  "
+echo "실행 중인 환경을 입력하세요."
+echo "$(tput setaf 3)1$(tput sgr0):로컬(~/wp)  |  $(tput setaf 3)2$(tput sgr0):서버(~/demo)"
+echo "-------------------------------------------------------------------------"
+read SERVER
+done
+echo "  "
+echo "프로젝트 이름을 입력하세요. (이 이름으로 디렉토리와 DB를 만듭니다.)"
+echo "-------------------------------------------------------------------------"
+read NAME
+echo "  "
+echo "프로젝트 비밀번호를 입력하세요. (이 비밀번호로 DB 비밀번호를 만듭니다.)"
+echo "-------------------------------------------------------------------------"
+read PASSWORD
+
+# ** 입력받은 이름으로부터 미리 기본 원격 저장소 변수 생성
+GIT_REPO_DEFAULT=git@akaivlabs.com:client/$NAME.git
+
+echo "  "
+echo "원격 저장소 주소를 입력하세요. 기본값: $GIT_REPO_DEFAULT"
+echo "기본값을 이용하시려면 바로 엔터를 입력하세요."
+echo "-------------------------------------------------------------------------"
+read GIT_REPO
+
+# 입력받은 값으로부터 변수 설정
+# ** 입력받은 실행 환경에 따라 설치 경로 설정
+if [ "$SERVER" == "1" ]; then
+  PARENT_DIR="wp"
+elif [ "$SERVER" == "2" ]; then
+  PARENT_DIR="demo"
+fi
+# ** 입력받은 리파지터리가 없으면 기본값 사용
+if [ "$GIT_REPO" == "" ]; then
+  GIT_REPO=$GIT_REPO_DEFAULT
+fi
+
+# DB 만들기
+echo "  "
+echo "DB를 새로 만드시겠습니까? (Y/n)"
+echo "-------------------------------------------------------------------------"
+read DB_CREATE
+if [ "$DB_CREATE" == "n" ] || [ "$DB_CREATE" == "N" ]; then
+	echo "  DB를 만들지 않습니다"
+else
+	echo "  DB를 만듭니다."
+	createdb $NAME $PASSWORD
+fi
+
+# 스크립트 시작
+# 템플릿 다운로드 및 압축해제
+cd ~ && cd $PARENT_DIR
+echo "  $(tput setaf 3)다운로드$(tput sgr0): $(tput setaf 2)https://github.com/akaiv/wp/archive/master.zip$(tput sgr0)"
+echo "  "
+wget https://github.com/akaiv/wp/archive/master.zip
+unzip master.zip
+rm -f master.zip
+mv wp-master $NAME && cd $_
+mkdir wp-content/themes/child/images
+wppermission # == 프로젝트 폴더의 권한 설정
+
+# 버전관리 시작하기
+git init
+# == 원격 저장소 설정
+git remote add origin $GIT_REPO
+# == 서브모듈 추가
+rm -rf .gitmodules wp-content/themes/child/style
+echo "  "
+echo "  $(tput setaf 3)서브모듈 추가$(tput sgr0): $(tput setaf 2)https://github.com/akaiv/style$(tput sgr0)"
+echo "  "
+git submodule add https://github.com/akaiv/style.git wp-content/themes/child/style
+# == 첫 커밋 및 푸쉬
+git add --all .
+git commit -m "[시작] $NAME 프로젝트 생성"
+echo "  "
+echo "  $(tput setaf 3)첫 커밋 푸쉬$(tput sgr0): $(tput setaf 2)$GIT_REPO$(tput sgr0)"
+echo "  "
+git push --set-upstream origin master
+cd ~ && cd $PARENT_DIR/$NAME
+
+echo "  $(tput setaf 3)"
+echo "  [완료] 템플릿의 사본을 생성했습니다."
+echo "  [완료] 원격 저장소: $GIT_REPO"
+echo "  [완료] 스타일 서브모듈을 추가했습니다."
+echo "  [완료] 처음으로 커밋하고 푸쉬했습니다."
+echo "  "
+echo "  이제 프로젝트를 시작하세요!"
+echo "  프로젝트 시작은 다음을 따르면 됩니다."
+echo "  "
+echo "  * nginx를 설정하세요."
+echo "  * 자식 테마의 상세 설명을 바꾸세요."
+echo "  * 자식 테마 디렉토리의 이름 변경은 권장하지 않습니다."
+echo "  * 처음으로 접속해서 wp-config.php를 만듭니다."
+echo "  $(tput sgr0)"

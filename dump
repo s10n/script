@@ -1,0 +1,211 @@
+#!/bin/bash
+# dump: DB 덤프하기
+
+echo "  "
+echo "  $(tput setaf 3)데이터베이스를 덤프합니다.$(tput sgr0)"
+echo "  $(tput setaf 3)덤프한 뒤 내용을 찾아바꾸기 합니다.$(tput sgr0)"
+
+# 사용자에게 입력받기
+# == 출발지
+SERVER=0
+until [ "$SERVER" == "1" ] || [ "$SERVER" == "2" ] || [ "$SERVER" == "3" ]; do
+  echo "  "
+  echo "지금 실행 중인 환경을 입력하세요."
+  echo "$(tput setaf 3)1$(tput sgr0):로컬 | $(tput setaf 3)2$(tput sgr0):서버 | $(tput setaf 3)3$(tput sgr0):특수"
+  echo "-------------------------------------------------------------------------"
+  read SERVER
+done
+# == 목적지
+DESTINATION=0
+until [ "$DESTINATION" == "1" ] || [ "$DESTINATION" == "2" ] || [ "$DESTINATION" == "3" ]; do
+  echo "  "
+  echo "목적지를 입력하세요."
+  echo "$(tput setaf 3)1$(tput sgr0):로컬 | $(tput setaf 3)2$(tput sgr0):서버 | $(tput setaf 3)3$(tput sgr0):특수"
+  echo "-------------------------------------------------------------------------"
+  read DESTINATION
+done
+# == 프로젝트 이름 및 비밀번호
+echo "  "
+echo "덤프하려는 프로젝트의 지금 DB 이름을 입력하세요."
+if [ "$SERVER" != "3" ]; then
+  echo "DB이름과 경로 이름이 일치해야합니다."
+fi
+echo "-------------------------------------------------------------------------"
+read NAME
+if [ "$SERVER" == "3" ]; then
+  echo "  "
+  echo "$NAME DB의 지금 사용자명을 입력하세요."
+  echo "-------------------------------------------------------------------------"
+  read DB_USER
+else
+  DB_USER=$NAME
+fi
+echo "  "
+echo "$NAME DB의 지금 비밀번호를 입력하세요."
+echo "-------------------------------------------------------------------------"
+read PASSWORD
+# == 새로운 프로젝트 이름
+echo "  "
+echo "목적지에서 사용할 DB이름을 입력하세요. (변경하지 않으려면 바로 엔터 입력)"
+echo "-------------------------------------------------------------------------"
+read NEW_NAME
+if [ "$NEW_NAME" == "" ]; then
+  NEW_NAME=$NAME
+fi
+# == SED를 위한 문자열 받기
+if [ "$SERVER" != "2" ] || [ "$DESTINATION" != "2" ]; then
+  echo "  "
+  echo "$(tput setaf 3)찾아바꾸기(sed)를 수행하기 위한 정보 입력$(tput sgr0)"
+fi
+# ** 출발지가 1이라면 출발지의 경로 묻기
+if [ "$SERVER" == "1" ]; then
+  echo "  "
+  echo "현재 프로젝트의 부모 디렉토리 위치(계정/경로)를 입력하세요."
+  echo "예를들어 /home/a/wp/$NAME에 설치되어있다면 a/wp를 입력하세요."
+  echo "기본값: a/wp (바로 엔터 입력)"
+  echo "-------------------------------------------------------------------------"
+  read ACCOUNT
+  # ** 값이 없으면 기본값 입력
+  if [ "$ACCOUNT" == "" ]; then
+    ACCOUNT=a/wp
+  fi
+fi
+# == 출발지가 3이라면 출발지를 더 정확히 입력받아야 함
+if [ "$SERVER" == "3" ]; then
+  echo "  "
+  echo "지금 사용중인 URL를 입력하세요."
+  echo "예: https://akaiv.com    ( 정규식, 따옴표, 마지막 슬래시 모두 쓰지 마세요. )"
+  echo "-------------------------------------------------------------------------"
+  read URL
+  echo "  "
+  echo "지금 사용중인 정확한 경로를 입력하세요."
+  echo "예: /home/akaiv/www    ( 정규식, 따옴표, 마지막 슬래시 모두 쓰지 마세요. )"
+  echo "-------------------------------------------------------------------------"
+  read DIR
+fi
+# ** 목적지가 1이라면 목적지의 경로 묻기
+if [ "$DESTINATION" == "1" ]; then
+  echo "  "
+  echo "목적지의 부모 디렉토리 위치(계정/경로)를 입력하세요."
+  echo "예를들어 /home/a/wp/$NAME에 설치할 것이라면 a/wp를 입력하세요."
+  echo "기본값: a/wp (바로 엔터 입력)"
+  echo "-------------------------------------------------------------------------"
+  read NEW_ACCOUNT
+  # ** 값이 없으면 기본값 입력
+  if [ "$ACCOUNT" == "" ]; then
+    NEW_ACCOUNT=a/wp
+  fi
+fi
+# == 목적지가 3이라면 목적지를 더 정확히 입력받아야 함
+if [ "$DESTINATION" == "3" ]; then
+  echo "  "
+  echo "목적지에서 사용할 URL를 입력하세요."
+  echo "예: https://akaiv.com    ( 정규식, 따옴표, 마지막 슬래시 모두 쓰지 마세요. )"
+  echo "-------------------------------------------------------------------------"
+  read NEW_URL
+  echo "  "
+  echo "목적지에서 사용할 정확한 경로를 입력하세요."
+  echo "예: /home/akaiv/www    ( 정규식, 따옴표, 마지막 슬래시 모두 쓰지 마세요. )"
+  echo "-------------------------------------------------------------------------"
+  read NEW_DIR
+  # ** 출발지가 1이라면 scp 보낼 주소를 알아야함
+  if [ "$SERVER" == "1" ]; then
+    echo "  "
+    echo "scp로 $NEW_NAME.sql과 uploads를 보낼 목적지의 정확한 계정@주소를 입력하세요."
+    echo "기본값(바로엔터): labs@akaivlabs.com    (  정규식, 따옴표, 마지막 슬래시는 모두 쓰지 마세요.  )"
+    echo "-------------------------------------------------------------------------"
+    read SCP
+    if [ "$SCP" == "" ]; then
+      SCP=labs@akaivlabs.com
+    fi
+  fi
+fi
+
+
+# == 출발지가 1 혹은 2 일때 URL과 경로
+if [ "$SERVER" == "1" ]; then
+  DOMAIN=http://virtual
+  PARENT_DIR=/home/$ACCOUNT
+  URL=$DOMAIN/$NAME
+  DIR=$PARENT_DIR/$NAME
+elif [ "$SERVER" == "2" ]; then
+  DOMAIN=http://demo.akaivlabs.com
+  PARENT_DIR=/home/labs/demo
+  URL=$DOMAIN/$NAME
+  DIR=$PARENT_DIR/$NAME
+fi
+
+# == 목적지가 1 혹은 2 일때 URL과 경로
+if [ "$DESTINATION" == "1" ]; then
+  NEW_DOMAIN=http://virtual
+  NEW_PARENT_DIR=/home/$NEW_ACCOUNT
+  NEW_URL=$NEW_DOMAIN/$NEW_NAME
+  NEW_DIR=$NEW_PARENT_DIR/$NEW_NAME
+elif [ "$DESTINATION" == "2" ]; then
+  NEW_DOMAIN=http://demo.akaivlabs.com
+  NEW_PARENT_DIR=/home/labs/demo
+  NEW_URL=$NEW_DOMAIN/$NEW_NAME
+  NEW_DIR=$NEW_PARENT_DIR/$NEW_NAME
+  SCP=labs@akaivlabs.com
+fi
+
+# 스크립트 시작
+# == DB 덤프
+mysqldump -u$DB_USER -p$PASSWORD $NAME > $NEW_NAME.sql
+
+# == 문자열 찾아바꾸기: URL과 경로
+sed -i 's@'"$URL"'@'"$NEW_URL"'@g' $NEW_NAME.sql
+sed -i 's@'"$DIR"'@'"$NEW_DIR"'@g' $NEW_NAME.sql
+# == 변경내역 출력
+echo " "
+echo "  $(tput setaf 3)SQL DUMP$(tput sgr0)  : $(tput setaf 1)$NAME$(tput sgr0) > $(tput setaf 2)$NEW_NAME.sql$(tput sgr0)"
+echo "  $(tput setaf 3)Domain$(tput sgr0)    : $(tput setaf 1)$URL$(tput sgr0) > $(tput setaf 2)$NEW_URL$(tput sgr0)"
+echo "  $(tput setaf 3)Directory$(tput sgr0) : $(tput setaf 1)$DIR$(tput sgr0) > $(tput setaf 2)$NEW_DIR$(tput sgr0)"
+
+# == 문자열 찾아바꾸기: 사용자 정의 메뉴
+# ** 사용자 정의 메뉴를 자동으로 바꿀 수 없는 경우
+if [ "$SERVER" == "3" ]; then
+  # 3:특수 > 3:특수 - 알수없음
+  if [ "$DESTINATION" == "3" ]; then
+    echo " "
+    echo "  $(tput setaf 3)관리자 > 외모 > 메뉴에서 사용자 정의 메뉴를 확인하십시오.$(tput sgr0)"
+  # 3:특수 > 1 혹은 2 - 생성할 수 없음
+  else
+    echo " "
+    echo "  $(tput setaf 3)사용자 정의 메뉴의 /$NAME을 생성할 수 없습니다.$(tput sgr0)"
+    echo "  $(tput setaf 3)관리자 > 외모 > 메뉴에서 수동으로 생성하십시오.$(tput sgr0)"
+  fi
+# ** 바꿀 수 있는 경우 ( 출발지가 1 혹은 2 )
+else
+  # 목적지가 3인 경우, 제거하면 됨
+  if [ "$DESTINATION" == "3" ]; then
+    sed -i 's@\/'"$NAME"'@\/@g' $NEW_NAME.sql
+    echo "  $(tput setaf 3)Menu url$(tput sgr0)  : $(tput setaf 1)/$NAME$(tput sgr0) > $(tput setaf 2)제거$(tput sgr0)"
+  # 목적지가 1 혹은 2인 경우 바꾸면 됨
+  else
+    sed -i 's@\/'"$NAME"'@\/'"$NEW_NAME"'@g' $NEW_NAME.sql
+    echo "  $(tput setaf 3)Menu url$(tput sgr0)  : $(tput setaf 1)/$NAME$(tput sgr0) > $(tput setaf 2)/$NEW_NAME$(tput sgr0)"
+  fi
+fi
+echo " "
+
+# SCP로 파일 보내기
+# == 출발지가 1:로컬이라면, 목적지로 파일 보내기
+if [ "$SERVER" == "1" ] && [ "$DESTINATION" != "1" ]; then
+  echo "$(tput setaf 3)$NEW_NAME.sql과 uploads폴더를 목적지로 보내시겠습니까? (Y/n)$(tput sgr0)"
+  echo "-------------------------------------------------------------------------"
+  read SCP_BOOL
+  if [ "$SCP_BOOL" == "n" ] || [ "$SCP_BOOL" == "N" ]; then
+    echo "  마칩니다."
+  else
+    echo "  "
+    echo "$(tput setaf 3)$SCP의 비밀번호를 입력하세요. (조금 기다려서 Password: 뒤에 입력합니다.)$(tput sgr0)"
+    echo "-------------------------------------------------------------------------"
+    scp $NEW_NAME.sql $SCP:~
+    scp -r ~/wp/$NAME/wp-content/uploads $SCP:~
+    rm -f $NEW_NAME.sql
+    echo "  "
+    echo "  $(tput setaf 3)Copied$(tput sgr0)   : $(tput setaf 1)$NEW_NAME.sql$(tput sgr0) > $(tput setaf 2)$SCP:~$(tput sgr0)"
+  fi
+fi
+echo "  "

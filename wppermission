@@ -1,0 +1,12 @@
+#!/bin/bash
+# wppermission: 워드프레스 보안에 적합한 권한을 설정합니다.
+# 프로젝트 폴더 내에서 사용하십시오.
+find . -type d -exec chmod 770 {} +
+find . -type f -exec chmod 660 {} +
+find wp-content -type d -exec chmod 775 {} +
+find wp-content -type f -exec chmod 664 {} +
+chmod 660 wp-config.php
+
+echo "  "
+echo "  $(tput setaf 3)권한 설정 완료$(tput sgr0)"
+echo "  "

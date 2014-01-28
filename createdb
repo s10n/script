@@ -1,0 +1,28 @@
+#!/bin/bash
+# create [name] [password]
+
+# 데이터베이스를 생성합니다.
+# [name]: DB 이름 및 DB 사용자명
+# [password]: DB 비밀번호
+# 이미 같은 이름의 DB가 존재하면 생성하지 않습니다.
+
+EXPECTED_ARGS=2
+E_BADARGS=65
+MYSQL=`which mysql`
+
+Q1="CREATE DATABASE IF NOT EXISTS $1;"
+Q2="GRANT ALL ON $1.* TO '$1'@'localhost' IDENTIFIED BY '$2';"
+Q3="FLUSH PRIVILEGES;"
+SQL="${Q1}${Q2}${Q3}"
+
+if [ $# -ne $EXPECTED_ARGS ]
+then
+  echo "Usage: $0 dbname dbpassword"
+  exit $E_BADARGS
+fi
+
+echo "  $(tput setaf 3)DB를 만들기 위해 MySQL 비밀번호를 입력하세요.$(tput sgr0)"
+$MYSQL -uroot -p -e "$SQL"
+echo "  "
+echo "  $(tput setaf 3)DB 생성$(tput sgr0): $(tput setaf 2)$1$(tput sgr0)"
+echo "  "

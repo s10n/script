@@ -1,0 +1,18 @@
+#!/bin/bash
+# 모든 스크립트 중 하나를 골라서 시작
+WP_ACTION=0
+until [ "$WP_ACTION" == "1" ] || [ "$WP_ACTION" == "2" ] || [ "$WP_ACTION" == "3" ]; do
+echo "  "
+echo "무엇을 진행할까요?"
+echo "$(tput setaf 3)1$(tput sgr0):워드프레스 시작  |  $(tput setaf 3)2$(tput sgr0):워드프레스 DB덤프  |  $(tput setaf 3)3$(tput sgr0):워드프레스 가져오기 혹은 버전관리"
+echo "-------------------------------------------------------------------------"
+read WP_ACTION
+done
+
+if [ "$WP_ACTION" == "1" ]; then
+  start
+elif [ "$WP_ACTION" == "2" ]; then
+  dump
+elif [ "$WP_ACTION" == "3" ]; then
+  copy
+fi

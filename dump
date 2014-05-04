@@ -70,13 +70,13 @@ if [ "$SERVER" == "1" ]; then
   echo "  "
   echo "  "
   echo "현재 프로젝트의 부모 디렉토리 위치(계정/경로)를 입력하세요."
-  echo "예를들어 /home/a/wp/$NAME에 설치되어있다면 a/wp를 입력하세요."
-  echo "기본값: a/wp (바로 엔터 입력)"
+  echo "예를들어 /Users/s10n/www/$NAME에 설치되어있다면 /Users/s10n/www를 입력하세요."
+  echo "기본값: /Users/s10n/www (바로 엔터 입력)"
   echo "-------------------------------------------------------------------------"
   read ACCOUNT
   # ** 값이 없으면 기본값 입력
   if [ "$ACCOUNT" == "" ]; then
-    ACCOUNT=a/wp
+    ACCOUNT=/Users/s10n/www
   fi
 fi
 # == 출발지가 3이라면 출발지를 더 정확히 입력받아야 함
@@ -99,13 +99,13 @@ if [ "$DESTINATION" == "1" ]; then
   echo "  "
   echo "  "
   echo "목적지의 부모 디렉토리 위치(계정/경로)를 입력하세요."
-  echo "예를들어 /home/a/wp/$NAME에 설치할 것이라면 a/wp를 입력하세요."
-  echo "기본값: a/wp (바로 엔터 입력)"
+  echo "예를들어 /Users/s10n/www/$NAME에 설치할 것이라면 a/wp를 입력하세요."
+  echo "기본값: /Users/s10n/www (바로 엔터 입력)"
   echo "-------------------------------------------------------------------------"
   read NEW_ACCOUNT
   # ** 값이 없으면 기본값 입력
   if [ "$ACCOUNT" == "" ]; then
-    NEW_ACCOUNT=a/wp
+    NEW_ACCOUNT=/Users/s10n/www
   fi
 fi
 # == 목적지가 3이라면 목적지를 더 정확히 입력받아야 함
@@ -139,8 +139,8 @@ fi
 
 # == 출발지가 1 혹은 2 일때 URL과 경로
 if [ "$SERVER" == "1" ]; then
-  DOMAIN=http://virtual
-  PARENT_DIR=/home/$ACCOUNT
+  DOMAIN=http://localhost
+  PARENT_DIR=$ACCOUNT
   URL=$DOMAIN/$NAME
   DIR=$PARENT_DIR/$NAME
 elif [ "$SERVER" == "2" ]; then
@@ -152,8 +152,8 @@ fi
 
 # == 목적지가 1 혹은 2 일때 URL과 경로
 if [ "$DESTINATION" == "1" ]; then
-  NEW_DOMAIN=http://virtual
-  NEW_PARENT_DIR=/home/$NEW_ACCOUNT
+  NEW_DOMAIN=http://localhost
+  NEW_PARENT_DIR=$NEW_ACCOUNT
   NEW_URL=$NEW_DOMAIN/$NEW_NAME
   NEW_DIR=$NEW_PARENT_DIR/$NEW_NAME
 elif [ "$DESTINATION" == "2" ]; then

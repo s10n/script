@@ -99,7 +99,7 @@ if [ "$DESTINATION" == "1" ]; then
   echo "  "
   echo "  "
   echo "목적지의 부모 디렉토리 위치(계정/경로)를 입력하세요."
-  echo "예를들어 /Users/s10n/www/$NAME에 설치할 것이라면 a/wp를 입력하세요."
+  echo "예를들어 /Users/s10n/www/$NAME에 설치할 것이라면 /Users/s10n/www를 입력하세요."
   echo "기본값: /Users/s10n/www (바로 엔터 입력)"
   echo "-------------------------------------------------------------------------"
   read NEW_ACCOUNT

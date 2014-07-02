@@ -4,7 +4,7 @@
 # 데이터베이스를 생성합니다.
 # 이미 같은 이름의 DB가 존재하면 생성하지 않습니다.
 
-EXPECTED_ARGS=2
+EXPECTED_ARGS=3
 E_BADARGS=65
 MYSQL=`which mysql`
 

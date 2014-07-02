@@ -2,7 +2,7 @@
 # addpath : 스크립트 폴더를 PATH에 추가합니다.
 echo "PATH=\$PATH:~/script" >> ~/.bash_profile
 cd ~
-source .bashrc
+source .bash_profile
 
 # 결과 출력
 echo "  "
